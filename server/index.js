@@ -1,0 +1,174 @@
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { createClient } = require('@supabase/supabase-js');
+const { AssemblyAI } = require('assemblyai');
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const supabase = createClient(
+  process.env.SUPABASE_URL, 
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+);
+const aai = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
+
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'CallVault Backend', webhook: process.env.WEBHOOK_URL });
+});
+
+// Endpoint to trigger AssemblyAI transcription
+app.post('/api/transcribe', async (req, res) => {
+  try {
+    const { recordingId, audioUrl } = req.body;
+    
+    if (!recordingId || !audioUrl) {
+      return res.status(400).json({ error: 'recordingId and audioUrl are required' });
+    }
+
+    const WEBHOOK_URL = process.env.WEBHOOK_URL || 'YOUR_NGROK_URL/api/webhook/assemblyai';
+
+    console.log(`[TRANSCRIBE] Starting for recording ${recordingId}`);
+    console.log(`[TRANSCRIBE] Audio URL: ${audioUrl}`);
+    console.log(`[TRANSCRIBE] Webhook URL: ${WEBHOOK_URL}`);
+
+    // Submit audio to AssemblyAI with ALL features enabled
+    const transcript = await aai.transcripts.submit({
+      audio_url: audioUrl,
+      webhook_url: WEBHOOK_URL,
+      webhook_auth_header_name: 'x-callvault-webhook-auth',
+      webhook_auth_header_value: process.env.WEBHOOK_SECRET || 'secret',
+      speech_models: ['universal-2'],
+      speaker_labels: true,
+      summarization: true,
+      summary_model: 'informative',
+      summary_type: 'bullets',
+      sentiment_analysis: true,
+      auto_highlights: true,
+      entity_detection: true,
+    });
+
+    console.log(`[TRANSCRIBE] Submitted! AssemblyAI ID: ${transcript.id}`);
+
+    // Update the recording in Supabase with the AssemblyAI ID
+    const { error } = await supabase
+      .from('recordings')
+      .update({ 
+        assembly_id: transcript.id,
+        status: 'pending'
+      })
+      .eq('id', recordingId);
+
+    if (error) {
+      console.error('[TRANSCRIBE] Supabase update error:', error);
+      throw error;
+    }
+
+    console.log(`[TRANSCRIBE] DB updated for ${recordingId}`);
+    res.json({ message: 'Transcription started', transcriptId: transcript.id });
+  } catch (error) {
+    console.error('[TRANSCRIBE] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// AssemblyAI Webhook handler
+app.post('/api/webhook/assemblyai', async (req, res) => {
+  console.log(`[WEBHOOK] Received webhook — status: ${req.body.status}, transcript_id: ${req.body.transcript_id}`);
+
+  const authHeader = req.headers['x-callvault-webhook-auth'];
+  if (authHeader !== (process.env.WEBHOOK_SECRET || 'secret')) {
+    console.log('[WEBHOOK] Unauthorized — bad auth header');
+    return res.status(401).send('Unauthorized');
+  }
+
+  const { transcript_id, status } = req.body;
+
+  if (status === 'completed') {
+    try {
+      // Fetch full transcript details from AssemblyAI
+      console.log(`[WEBHOOK] Fetching full transcript from AssemblyAI...`);
+      const transcript = await aai.transcripts.get(transcript_id);
+      
+      console.log(`[WEBHOOK] Got transcript. Text length: ${transcript.text?.length || 0}`);
+      console.log(`[WEBHOOK] Summary: ${transcript.summary ? 'YES' : 'NO'}`);
+      console.log(`[WEBHOOK] Sentiment results: ${transcript.sentiment_analysis_results?.length || 0} segments`);
+      console.log(`[WEBHOOK] Highlights: ${transcript.auto_highlights_result?.results?.length || 0} items`);
+
+      // ── Compute sentiment percentages ──
+      let sentimentData = { positive: 0, negative: 0, neutral: 0 };
+      if (transcript.sentiment_analysis_results && transcript.sentiment_analysis_results.length > 0) {
+        const total = transcript.sentiment_analysis_results.length;
+        const pos = transcript.sentiment_analysis_results.filter(s => s.sentiment === 'POSITIVE').length;
+        const neg = transcript.sentiment_analysis_results.filter(s => s.sentiment === 'NEGATIVE').length;
+        const neu = total - pos - neg;
+        sentimentData = {
+          positive: Math.round((pos / total) * 100),
+          negative: Math.round((neg / total) * 100),
+          neutral: Math.round((neu / total) * 100),
+        };
+      }
+
+      // ── Extract key highlights as action items ──
+      let actionItems = [];
+      if (transcript.auto_highlights_result && transcript.auto_highlights_result.results) {
+        actionItems = transcript.auto_highlights_result.results
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+          .map(h => ({ text: h.text, count: h.count, rank: h.rank }));
+      }
+
+      // ── Extract topics from entities ──
+      let topics = [];
+      if (transcript.entities && transcript.entities.length > 0) {
+        topics = transcript.entities.slice(0, 15).map(e => ({
+          text: e.text,
+          type: e.entity_type,
+        }));
+      }
+
+      // Update Supabase with all results
+      const updateData = {
+        status: 'analyzed',
+        transcript_text: transcript.text || '',
+        summary: transcript.summary || '',
+        sentiment: JSON.stringify(sentimentData),
+        action_items: actionItems,
+        topics: topics,
+      };
+
+      console.log(`[WEBHOOK] Updating DB with analyzed data...`);
+      const { error } = await supabase
+        .from('recordings')
+        .update(updateData)
+        .eq('assembly_id', transcript_id);
+        
+      if (error) {
+        console.error('[WEBHOOK] Supabase Update Error:', error);
+      } else {
+        console.log(`[WEBHOOK] ✅ Successfully updated recording for transcript ${transcript_id}`);
+      }
+      
+    } catch (err) {
+      console.error('[WEBHOOK] Processing error:', err.message);
+    }
+  } else if (status === 'error') {
+    console.log(`[WEBHOOK] ❌ Transcription failed for ${transcript_id}`);
+    await supabase
+      .from('recordings')
+      .update({ status: 'error' })
+      .eq('assembly_id', transcript_id);
+  }
+
+  res.sendStatus(200);
+});
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`CallVault Server running on port ${PORT}`);
+  console.log(`Webhook URL: ${process.env.WEBHOOK_URL}`);
+});

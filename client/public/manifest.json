@@ -1,0 +1,15 @@
+{
+  "short_name": "CallVault",
+  "name": "CallVault Smart Call Recording",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0F0F1A",
+  "background_color": "#0F0F1A"
+}
