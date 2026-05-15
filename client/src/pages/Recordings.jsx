@@ -142,7 +142,8 @@ export default function Recordings() {
       if (dbError) throw dbError;
 
       // Trigger transcription
-      await axios.post('http://localhost:5001/api/transcribe', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      await axios.post(`${API_URL}/api/transcribe`, {
         recordingId: dbData.id,
         audioUrl: publicUrl,
       });
