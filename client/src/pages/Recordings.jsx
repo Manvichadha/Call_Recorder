@@ -192,7 +192,6 @@ export default function Recordings() {
               <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Recordings</h1>
               <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">{recordings.length} total recordings</p>
             </div>
-            </div>
             <div className="flex items-center gap-3">
               {/* Upload button */}
               <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" id="audio-upload" disabled={uploading} />
