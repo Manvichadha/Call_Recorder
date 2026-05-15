@@ -75,23 +75,24 @@ export default function Contacts() {
       )}
 
       <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-6 lg:px-10 pt-16 pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Contacts</h1>
-              <p className="text-sm text-gray-400 mt-6">{contacts.length} saved contacts</p>
+              <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Contacts</h1>
+              <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">{contacts.length} saved contacts</p>
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="h-11 px-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center gap-2 text-white text-sm font-semibold shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform"
+              className="h-9 lg:h-11 px-3 lg:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center gap-1.5 lg:gap-2 text-white text-xs lg:text-sm font-semibold shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform"
             >
               <UserPlus className="w-4 h-4" />
-              Add Contact
+              <span className="hidden sm:inline">Add Contact</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
         </header>
 
-        <div className="px-5 lg:px-8 pt-6">
+        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
 
           {/* ── Add Contact Form Modal ── */}
           {showForm && (

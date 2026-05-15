@@ -80,7 +80,7 @@ export default function Sidebar() {
       </aside>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 px-2 py-1.5 pb-safe flex justify-around items-center z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 px-1 py-1 flex justify-around items-center z-50" style={{ paddingBottom: 'max(6px, env(safe-area-inset-bottom))' }}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -88,16 +88,16 @@ export default function Sidebar() {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="flex flex-col items-center gap-0.5 py-1 px-2"
+              className="flex flex-col items-center gap-0.5 py-0.5 px-1"
             >
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                 isActive 
                   ? 'bg-[#FBB244] text-white shadow-sm' 
                   : 'text-[#B0BAC9]'
               }`}>
-                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className="w-4 h-4" strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-amber-600' : 'text-gray-400'}`}>
+              <span className={`text-[9px] font-semibold ${isActive ? 'text-amber-600' : 'text-gray-400'}`}>
                 {item.label.split(' ')[0]}
               </span>
             </button>

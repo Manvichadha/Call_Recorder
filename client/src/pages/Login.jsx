@@ -80,7 +80,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#F6F8FC]">
 
       {/* ── Left Panel — Dark Branding ── */}
-      <div className="relative lg:w-[48%] bg-gradient-to-br from-[#0F0F1A] via-[#1a1a2e] to-[#0F0F1A] text-white p-8 lg:p-16 flex flex-col justify-between overflow-hidden min-h-[280px] lg:min-h-screen">
+      <div className="relative lg:w-[48%] bg-gradient-to-br from-[#0F0F1A] via-[#1a1a2e] to-[#0F0F1A] text-white p-6 lg:p-16 flex flex-col justify-between overflow-hidden min-h-[180px] lg:min-h-screen">
         {/* Decorative gradient blobs */}
         <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute -bottom-32 -right-32 w-[350px] h-[350px] bg-violet-600/15 rounded-full blur-[120px] pointer-events-none"></div>
@@ -101,14 +101,14 @@ export default function Login() {
 
         {/* Welcome text */}
         <div className="relative z-10 my-8 lg:my-0">
-          <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-4">
+          <h1 className="text-2xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-2 lg:mb-4">
             Welcome to
             <br />
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
               CallVault
             </span>
           </h1>
-          <p className="text-gray-400 text-base lg:text-lg leading-relaxed max-w-md">
+          <p className="text-gray-400 text-sm lg:text-lg leading-relaxed max-w-md hidden lg:block">
             Sign in to record calls, access AI-powered
             transcriptions, and get intelligent insights
             from every conversation.
@@ -133,12 +133,12 @@ export default function Login() {
       </div>
 
       {/* ── Right Panel — Form ── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-16">
         <div className="w-full max-w-md">
 
           {/* Sign In heading */}
-          <div className="mb-8">
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+          <div className="mb-5 lg:mb-8">
+            <h2 className="text-2xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-1 lg:mb-2">
               {step === 'phone' ? (isSignUp ? 'Sign Up' : 'Sign In') : 'Verify OTP'}
             </h2>
             <p className="text-gray-500 text-base">

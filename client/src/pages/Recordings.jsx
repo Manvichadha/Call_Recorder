@@ -186,11 +186,12 @@ export default function Recordings() {
 
       <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
         {/* ── Header ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-6 lg:px-10 pt-16 pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Recordings</h1>
-              <p className="text-sm text-gray-400 mt-6">{recordings.length} total recordings</p>
+              <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Recordings</h1>
+              <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">{recordings.length} total recordings</p>
+            </div>
             </div>
             <div className="flex items-center gap-3">
               {/* Upload button */}
@@ -204,7 +205,7 @@ export default function Recordings() {
           </div>
         </header>
 
-        <div className="px-5 lg:px-8 pt-6">
+        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
           {/* ── Filter Tabs ── */}
           <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
             {[
@@ -351,32 +352,32 @@ export default function Recordings() {
                       </div>
 
                       {/* Mobile Card */}
-                      <div className="md:hidden px-5 py-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => togglePlay(rec)}
-                              disabled={!rec.file_url}
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                isPlaying ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
-                              }`}
-                            >
-                              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                            </button>
-                            <div>
-                              <h4 className="text-sm font-semibold text-gray-900">{name}</h4>
-                              <p className="text-xs text-gray-400 mt-0.5">
-                                {new Date(rec.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                {rec.duration_seconds ? ` · ${formatTime(rec.duration_seconds)}` : ''}
-                              </p>
-                            </div>
+                      <div className="md:hidden px-3 py-3" onClick={() => {
+                        if (rec.status === 'analyzed' || rec.status === 'transcribed') navigate(`/analysis/${rec.id}`);
+                      }}>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); togglePlay(rec); }}
+                            disabled={!rec.file_url}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              isPlaying ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                            }`}
+                          >
+                            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-semibold text-gray-900 truncate">{name}</h4>
+                            <p className="text-[10px] text-gray-400 mt-0.5">
+                              {new Date(rec.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              {rec.duration_seconds ? ` · ${formatTime(rec.duration_seconds)}` : ''}
+                            </p>
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ${
                             rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
                             rec.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
                             'bg-amber-50 text-amber-600'
                           }`}>
-                            {rec.status === 'analyzed' ? 'AI Ready' : rec.status === 'transcribed' ? 'Done' : 'Processing'}
+                            {rec.status === 'analyzed' ? 'AI' : rec.status === 'transcribed' ? 'Done' : '...'}
                           </span>
                         </div>
                         {isPlaying && (

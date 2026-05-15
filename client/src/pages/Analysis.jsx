@@ -135,17 +135,17 @@ export default function Analysis() {
       <div className="min-h-screen bg-[#EEF2F9] font-sans p-3 lg:p-5">
         <Sidebar />
         <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-6 lg:px-10 pt-16 pb-8">
-            <h1 className="text-4xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">AI Analysis</h1>
-            <p className="text-sm text-gray-400 mt-6">{allRecordings.length} recordings · {countByStatus('analyzed')} analyzed</p>
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
+            <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">AI Analysis</h1>
+            <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">{allRecordings.length} recordings · {countByStatus('analyzed')} analyzed</p>
           </header>
 
-          <div className="px-5 lg:px-8 pt-6">
+          <div className="px-3 lg:px-8 pt-4 lg:pt-6">
             {/* Filter Tabs */}
             <div className="flex items-center gap-2 mb-8">
               {filterTabs.map(tab => (
                 <button key={tab.key} onClick={() => setListFilter(tab.key)}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  className={`px-3 lg:px-5 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold transition-all ${
                     listFilter === tab.key
                       ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
@@ -170,7 +170,7 @@ export default function Analysis() {
               </div>
             ) : (
               /* ── Kanban Columns ── */
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-5">
                 {STATUS_COLS.filter(col => listFilter === 'all' || col.key === listFilter).map(col => {
                   const colRecs = allRecordings.filter(r => r.status === col.key);
                   return (
@@ -239,45 +239,45 @@ export default function Analysis() {
 
       <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
         {/* ── Header ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-6 lg:px-10 pt-16 pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/recordings')} className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all shadow-sm">
+            <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+              <button onClick={() => navigate('/recordings')} className="w-8 h-8 lg:w-9 lg:h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all shadow-sm shrink-0">
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <div>
-                <h1 className="text-4xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight truncate max-w-[400px]">
+              <div className="min-w-0">
+                <h1 className="text-xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight truncate">
                   {getRecName(recording)}
                 </h1>
-                <p className="text-xs text-gray-400 mt-3">
+                <p className="text-[10px] lg:text-xs text-gray-400 mt-0.5 lg:mt-3">
                   {new Date(recording.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg ${
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`text-[10px] lg:text-xs font-bold px-2 lg:px-3 py-1 lg:py-1.5 rounded-lg ${
                 recording.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
                 recording.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
                 'bg-amber-50 text-amber-600'
               }`}>
-                {recording.status === 'analyzed' ? '✨ AI Ready' : recording.status === 'transcribed' ? '✅ Transcribed' : '⏳ Pending'}
+                {recording.status === 'analyzed' ? '✨ AI Ready' : recording.status === 'transcribed' ? '✅ Done' : '⏳ Pending'}
               </span>
             </div>
           </div>
         </header>
 
-        <div className="px-5 lg:px-8 pt-6">
+        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* ── Left Column (2/3) ── */}
             <div className="lg:col-span-2 space-y-6">
 
               {/* ── Audio Player Card ── */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                <div className="flex items-center gap-4 mb-5">
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 lg:p-6 shadow-sm">
+                <div className="flex items-center gap-3 lg:gap-4 mb-3 lg:mb-5">
                   <button
                     onClick={togglePlay}
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shrink-0 ${
+                    className={`w-11 h-11 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center transition-all shrink-0 ${
                       isPlaying 
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
                         : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-200'

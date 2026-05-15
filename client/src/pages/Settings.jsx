@@ -167,12 +167,12 @@ export default function Settings() {
       )}
 
       <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-6 lg:px-10 pt-16 pb-8">
-          <h1 className="text-4xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Settings</h1>
-          <p className="text-sm text-gray-400 mt-6">Manage your account preferences and security</p>
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
+          <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Settings</h1>
+          <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">Manage your account preferences and security</p>
         </header>
 
-        <div className="px-5 lg:px-10 pt-8">
+        <div className="px-3 lg:px-10 pt-4 lg:pt-8">
 
           {/* ═══ ROW 1: User Profile + Stats Donut ═══ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">

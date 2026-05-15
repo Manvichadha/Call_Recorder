@@ -177,10 +177,10 @@ export default function Simulator() {
       <main className="flex-1 lg:pl-[120px] pb-24 lg:pb-0 p-4 lg:p-8 flex items-center justify-center">
         
         {/* Phone UI Container */}
-        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: '780px', borderRadius: '48px', border: '8px solid #111827' }}>
+        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: 'min(780px, calc(100vh - 120px))', borderRadius: '48px', border: '8px solid #111827' }}>
           
           {/* Screen Content */}
-          <div className="flex-1 flex flex-col bg-slate-50 pt-16 pb-8 px-6 relative">
+          <div className="flex-1 flex flex-col bg-slate-50 pt-10 lg:pt-16 pb-4 lg:pb-8 px-4 lg:px-6 relative">
             
             {/* ── Idle State (Dialer) ── */}
             {callState === 'idle' && (
