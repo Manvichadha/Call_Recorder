@@ -20,6 +20,7 @@ export default function Recordings() {
   const [duration, setDuration] = useState(0);
   const [filterStatus, setFilterStatus] = useState('all');
   const audioRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const fetchRecordings = async () => {
     if (!user) return;
@@ -194,12 +195,23 @@ export default function Recordings() {
             </div>
             <div className="flex items-center gap-3">
               {/* Upload button */}
-              <input type="file" accept="audio/*, .m4a, .mp3, .wav" onChange={handleFileUpload} className="hidden" id="audio-upload" disabled={uploading} />
-              <label htmlFor="audio-upload"
-                className="h-10 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform cursor-pointer gap-2 text-sm font-semibold">
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept="audio/*, .m4a, .mp3, .wav" 
+                onChange={handleFileUpload} 
+                style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                id="audio-upload" 
+                disabled={uploading} 
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="h-10 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform cursor-pointer gap-2 text-sm font-semibold"
+              >
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                 <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
-              </label>
+              </button>
             </div>
           </div>
         </header>
