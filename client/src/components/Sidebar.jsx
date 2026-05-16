@@ -80,7 +80,7 @@ export default function Sidebar() {
       </aside>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 px-1 py-1 flex justify-around items-center z-50" style={{ paddingBottom: 'max(6px, env(safe-area-inset-bottom))' }}>
+      <nav className="lg:hidden fixed bottom-3 left-3 right-3 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-2xl px-2 py-1.5 flex justify-around items-center z-50 shadow-lg shadow-black/5" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -88,7 +88,7 @@ export default function Sidebar() {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="flex flex-col items-center gap-0.5 py-0.5 px-1"
+              className="flex flex-col items-center gap-0.5 py-1 px-1.5"
             >
               <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                 isActive 

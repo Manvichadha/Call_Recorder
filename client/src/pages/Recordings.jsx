@@ -180,13 +180,13 @@ export default function Recordings() {
   const getRecName = (rec) => rec.contacts?.name || rec.phone_number || 'Untitled Recording';
 
   return (
-    <div className="min-h-screen bg-[#EEF2F9] font-sans p-0 lg:p-5">
+    <div className="min-h-screen bg-gradient-to-b from-[#e8edf5] to-[#dfe5f0] font-sans p-3 lg:p-5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <Sidebar />
       <audio ref={audioRef} className="hidden" />
 
-      <div className="bg-white rounded-none lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-screen lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
+      <div className="bg-white rounded-3xl lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-24px)] lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
         {/* ── Header ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pb-4 lg:pb-8" style={{ paddingTop: 'max(2rem, calc(env(safe-area-inset-top) + 1rem))' }}>
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-5 lg:px-10 pt-6 lg:pt-16 pb-4 lg:pb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Recordings</h1>
@@ -204,7 +204,7 @@ export default function Recordings() {
           </div>
         </header>
 
-        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
+        <div className="px-4 lg:px-8 pt-5 lg:pt-6">
           {/* ── Filter Tabs ── */}
           <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
             {[
@@ -320,9 +320,11 @@ export default function Recordings() {
                               rec.status === 'error' ? 'bg-red-500' :
                               'bg-amber-500 animate-pulse'
                             }`}></div>
-                            {rec.status === 'analyzed' ? 'AI Ready' : 
-                             rec.status === 'transcribed' ? 'Transcribed' : 
-                             rec.status === 'error' ? 'Error' : 'Processing...'}
+                            <span title={rec.status === 'error' ? "Audio format unsupported or no speech detected (silent file)." : ""}>
+                              {rec.status === 'analyzed' ? 'AI Ready' : 
+                               rec.status === 'transcribed' ? 'Transcribed' : 
+                               rec.status === 'error' ? 'Silent / Error' : 'Processing...'}
+                            </span>
                           </span>
                         </div>
 
@@ -371,12 +373,13 @@ export default function Recordings() {
                               {rec.duration_seconds ? ` · ${formatTime(rec.duration_seconds)}` : ''}
                             </p>
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ${
+                          <span title={rec.status === 'error' ? "No speech detected" : ""} className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ${
                             rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
                             rec.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
+                            rec.status === 'error' ? 'bg-red-50 text-red-500' :
                             'bg-amber-50 text-amber-600'
                           }`}>
-                            {rec.status === 'analyzed' ? 'AI' : rec.status === 'transcribed' ? 'Done' : '...'}
+                            {rec.status === 'analyzed' ? 'AI' : rec.status === 'transcribed' ? 'Done' : rec.status === 'error' ? 'Error' : '...'}
                           </span>
                         </div>
                         {isPlaying && (
