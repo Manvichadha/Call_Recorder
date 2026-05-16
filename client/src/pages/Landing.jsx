@@ -195,11 +195,13 @@ export default function Landing() {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-2xl p-4 md:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-center md:block gap-4"
             >
-              <div className="text-4xl md:text-5xl font-extrabold text-indigo-600 mb-2">{stat.value}</div>
-              <div className="text-lg font-bold text-gray-900 mb-1">{stat.label}</div>
-              <div className="text-sm text-gray-400">{stat.description}</div>
+              <div className="text-3xl md:text-5xl font-extrabold text-indigo-600 md:mb-2 w-20 md:w-auto shrink-0 text-center md:text-left">{stat.value}</div>
+              <div>
+                <div className="text-base md:text-lg font-bold text-gray-900 mb-0.5 md:mb-1">{stat.label}</div>
+                <div className="text-xs md:text-sm text-gray-400 leading-snug">{stat.description}</div>
+              </div>
             </div>
           ))}
         </div>
