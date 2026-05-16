@@ -172,9 +172,9 @@ export default function Simulator() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-[#e8edf5] to-[#dfe5f0] font-sans" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="flex min-h-screen bg-[#F6F8FC] font-sans">
       <Sidebar />
-      <main className="flex-1 lg:pl-[120px] pb-24 lg:pb-0 p-3 lg:p-8 flex items-center justify-center">
+      <main className="flex-1 lg:pl-[120px] pb-24 lg:pb-0 p-4 lg:p-8 flex items-center justify-center">
         
         {/* Phone UI Container */}
         <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: 'min(780px, calc(100vh - 120px))', borderRadius: '48px', border: '8px solid #111827' }}>

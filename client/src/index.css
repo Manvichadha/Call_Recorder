@@ -38,6 +38,14 @@
   }
 }
 
+/* ── Mobile-specific: remove outer padding & heavy rounding on small screens ── */
+@media (max-width: 1023px) {
+  .mobile-container {
+    border-radius: 0 !important;
+    min-height: 100vh !important;
+  }
+}
+
 /* ── Hide scrollbar utility ── */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

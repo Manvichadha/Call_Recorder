@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
-import { 
-  Filter, Play, Pause, UploadCloud, Loader2, 
+import {
+  Filter, Play, Pause, UploadCloud, Loader2,
   Download, Trash2, Clock, Brain
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -73,7 +73,7 @@ export default function Recordings() {
     if (!playing?.file_url) return;
 
     audio.src = playing.file_url;
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
 
     const onTime = () => setCurrentTime(audio.currentTime);
     const onMeta = () => setDuration(audio.duration);
@@ -180,13 +180,13 @@ export default function Recordings() {
   const getRecName = (rec) => rec.contacts?.name || rec.phone_number || 'Untitled Recording';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e8edf5] to-[#dfe5f0] font-sans p-3 lg:p-5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-screen bg-[#EEF2F9] font-sans p-0 lg:p-5">
       <Sidebar />
       <audio ref={audioRef} className="hidden" />
 
-      <div className="bg-white rounded-3xl lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-24px)] lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
+      <div className="bg-white rounded-none lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-screen lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
         {/* ── Header ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-5 lg:px-10 pt-6 lg:pt-16 pb-4 lg:pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pb-4 lg:pb-8" style={{ paddingTop: 'max(2rem, calc(env(safe-area-inset-top) + 1rem))' }}>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Recordings</h1>
@@ -195,7 +195,7 @@ export default function Recordings() {
             <div className="flex items-center gap-3">
               {/* Upload button */}
               <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" id="audio-upload" disabled={uploading} />
-              <label htmlFor="audio-upload" 
+              <label htmlFor="audio-upload"
                 className="h-10 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform cursor-pointer gap-2 text-sm font-semibold">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                 <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
@@ -204,7 +204,7 @@ export default function Recordings() {
           </div>
         </header>
 
-        <div className="px-4 lg:px-8 pt-5 lg:pt-6">
+        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
           {/* ── Filter Tabs ── */}
           <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
             {[
@@ -216,11 +216,10 @@ export default function Recordings() {
               <button
                 key={f.key}
                 onClick={() => setFilterStatus(f.key)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
-                  filterStatus === f.key
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700'
-                }`}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${filterStatus === f.key
+                  ? 'bg-gray-900 text-white shadow-sm'
+                  : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700'
+                  }`}
               >
                 {f.label} <span className="ml-1 text-xs opacity-60">{statusCounts[f.key]}</span>
               </button>
@@ -230,7 +229,7 @@ export default function Recordings() {
           {/* ── Recordings List ── */}
           {loading ? (
             <div className="space-y-4">
-              {[1,2,3,4].map(i => <div key={i} className="h-20 bg-white animate-pulse rounded-2xl border border-gray-100" />)}
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-white animate-pulse rounded-2xl border border-gray-100" />)}
             </div>
           ) : filteredRecordings.length === 0 ? (
             <div className="text-center py-20">
@@ -268,11 +267,10 @@ export default function Recordings() {
                           <button
                             onClick={() => togglePlay(rec)}
                             disabled={!rec.file_url}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 ${
-                              isPlaying
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                                : 'bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
-                            } ${!rec.file_url ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0 ${isPlaying
+                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                              : 'bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
+                              } ${!rec.file_url ? 'opacity-30 cursor-not-allowed' : ''}`}
                           >
                             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                           </button>
@@ -299,8 +297,8 @@ export default function Recordings() {
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5 text-gray-400" />
                             <span className="text-sm text-gray-500 tabular-nums">
-                              {rec.duration_seconds 
-                                ? `${Math.floor(rec.duration_seconds / 60)}:${String(Math.round(rec.duration_seconds % 60)).padStart(2, '0')}` 
+                              {rec.duration_seconds
+                                ? `${Math.floor(rec.duration_seconds / 60)}:${String(Math.round(rec.duration_seconds % 60)).padStart(2, '0')}`
                                 : '—'}
                             </span>
                           </div>
@@ -308,22 +306,21 @@ export default function Recordings() {
 
                         {/* Status */}
                         <div className="col-span-2">
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${
-                            rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' :
                             rec.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
-                            rec.status === 'error' ? 'bg-red-50 text-red-500' :
-                            'bg-amber-50 text-amber-600'
-                          }`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${
-                              rec.status === 'analyzed' ? 'bg-indigo-500' :
+                              rec.status === 'error' ? 'bg-red-50 text-red-500' :
+                                'bg-amber-50 text-amber-600'
+                            }`}>
+
+                            <div className={`w-1.5 h-1.5 rounded-full ${rec.status === 'analyzed' ? 'bg-indigo-500' :
                               rec.status === 'transcribed' ? 'bg-emerald-500' :
-                              rec.status === 'error' ? 'bg-red-500' :
-                              'bg-amber-500 animate-pulse'
-                            }`}></div>
+                                rec.status === 'error' ? 'bg-red-500' :
+                                  'bg-amber-500 animate-pulse'
+                              }`}></div>
                             <span title={rec.status === 'error' ? "Audio format unsupported or no speech detected (silent file)." : ""}>
-                              {rec.status === 'analyzed' ? 'AI Ready' : 
-                               rec.status === 'transcribed' ? 'Transcribed' : 
-                               rec.status === 'error' ? 'Silent / Error' : 'Processing...'}
+                              {rec.status === 'analyzed' ? 'AI Ready' :
+                                rec.status === 'transcribed' ? 'Transcribed' :
+                                  rec.status === 'error' ? 'Silent / Error' : 'Processing...'}
                             </span>
                           </span>
                         </div>
@@ -331,7 +328,7 @@ export default function Recordings() {
                         {/* Actions */}
                         <div className="col-span-2 flex items-center justify-end gap-1">
                           {(rec.status === 'analyzed' || rec.status === 'transcribed') && (
-                            <button 
+                            <button
                               onClick={() => navigate(`/analysis/${rec.id}`)}
                               className="h-8 px-3 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
                             >
@@ -344,7 +341,7 @@ export default function Recordings() {
                               <Download className="w-4 h-4" />
                             </a>
                           )}
-                          <button 
+                          <button
                             onClick={() => handleDelete(rec.id)}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100">
                             <Trash2 className="w-4 h-4" />
@@ -360,9 +357,8 @@ export default function Recordings() {
                           <button
                             onClick={(e) => { e.stopPropagation(); togglePlay(rec); }}
                             disabled={!rec.file_url}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                              isPlaying ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
-                            }`}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPlaying ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                              }`}
                           >
                             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                           </button>
@@ -373,12 +369,12 @@ export default function Recordings() {
                               {rec.duration_seconds ? ` · ${formatTime(rec.duration_seconds)}` : ''}
                             </p>
                           </div>
-                          <span title={rec.status === 'error' ? "No speech detected" : ""} className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ${
-                            rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
-                            rec.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
-                            rec.status === 'error' ? 'bg-red-50 text-red-500' :
-                            'bg-amber-50 text-amber-600'
-                          }`}>
+                          <span title={rec.status === 'error' ? "No speech detected" : ""}
+                            className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ${rec.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' :
+                              rec.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :
+                                rec.status === 'error' ? 'bg-red-50 text-red-500' :
+                                  'bg-amber-50 text-amber-600'
+                              }`}>
                             {rec.status === 'analyzed' ? 'AI' : rec.status === 'transcribed' ? 'Done' : rec.status === 'error' ? 'Error' : '...'}
                           </span>
                         </div>

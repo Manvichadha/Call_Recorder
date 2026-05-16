@@ -156,35 +156,34 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e8edf5] to-[#dfe5f0] font-sans p-3 lg:p-5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-screen bg-[#EEF2F9] font-sans p-0 lg:p-5">
       <Sidebar />
       <audio ref={audioRef} className="hidden" />
 
-      <div className="bg-white rounded-3xl lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-24px)] lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
+      <div className="bg-white rounded-none lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-screen lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
 
         {/* ── Top Bar ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-5 lg:px-10 pt-6 lg:pt-16 pb-4 lg:pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pb-4 lg:pb-8" style={{ paddingTop: 'max(2rem, calc(env(safe-area-inset-top) + 1rem))' }}>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-gray-400 mb-0.5 lg:hidden">Welcome back 👋</p>
-              <h1 className="text-xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
-            </div>
+            <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
 
-            {/* User avatar — always visible */}
-            <div className="flex items-center gap-2.5">
-              <div className="hidden sm:block text-right">
-                <p className="text-sm font-semibold text-gray-900">User {user?.phone?.slice(-4) || ''}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Personal</p>
-              </div>
-              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs lg:text-sm shadow-lg shadow-indigo-200">
-                {user?.phone ? user.phone.slice(-2) : 'U'}
+            {/* User */}
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-900">User {user?.phone?.slice(-4) || ''}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider">Personal</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-200">
+                  {user?.phone ? user.phone.slice(-2) : 'U'}
+                </div>
               </div>
             </div>
           </div>
         </header>
 
         {/* ── Dashboard Content ── */}
-        <div className="px-4 lg:px-8 pt-5 lg:pt-6">
+        <div className="px-3 lg:px-8 pt-4 lg:pt-6">
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
