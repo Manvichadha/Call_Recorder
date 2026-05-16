@@ -151,7 +151,7 @@ export default function Recordings() {
       fetchRecordings();
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Upload failed: ' + err.message);
+      alert('Upload failed: ' + (err.response?.data?.error || err.message));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -194,7 +194,7 @@ export default function Recordings() {
             </div>
             <div className="flex items-center gap-3">
               {/* Upload button */}
-              <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" id="audio-upload" disabled={uploading} />
+              <input type="file" accept="audio/*, .m4a, .mp3, .wav" onChange={handleFileUpload} className="hidden" id="audio-upload" disabled={uploading} />
               <label htmlFor="audio-upload"
                 className="h-10 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform cursor-pointer gap-2 text-sm font-semibold">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
