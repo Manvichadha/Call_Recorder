@@ -19,7 +19,9 @@ export default function Settings() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [toast, setToast] = useState('');
-  const [stats, setStats] = useState({ total: 0, transcribed: 0, analyzed: 0, hours: 0 });
+  const [stats, setStats] = useState({ total: 0, transcribed: 0, analyzed: 0, pending: 0, hours: 0 });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     async function fetchStats() {
@@ -29,8 +31,9 @@ export default function Settings() {
         const dur = data.reduce((a, r) => a + (r.duration_seconds || 0), 0);
         setStats({
           total: data.length,
-          transcribed: data.filter(r => r.status === 'transcribed' || r.status === 'analyzed').length,
+          transcribed: data.filter(r => r.status === 'transcribed').length,
           analyzed: data.filter(r => r.status === 'analyzed').length,
+          pending: data.filter(r => r.status !== 'transcribed' && r.status !== 'analyzed').length,
           hours: (dur / 3600).toFixed(1),
         });
       }
@@ -47,7 +50,69 @@ export default function Settings() {
       <div className={`w-[22px] h-[22px] rounded-full bg-white absolute top-[2px] transition-transform shadow-sm ${enabled ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
     </button>
   );
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: profile.fullName }
+      });
+      if (error) throw error;
+      showToast('Profile updated successfully!');
+    } catch (err) {
+      alert('Error updating profile: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
+  const handleGenerateReport = async () => {
+    setIsGenerating(true);
+    try {
+      let query = supabase.from('recordings').select('*, contacts(name)');
+      if (startDate) query = query.gte('created_at', new Date(startDate).toISOString());
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', end.toISOString());
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        showToast('No data found for this period.');
+        setIsGenerating(false);
+        return;
+      }
+
+      const headers = ['ID', 'Date', 'Contact', 'Phone Number', 'Duration (s)', 'Status', 'File URL'];
+      const rows = data.map(r => [
+        r.id, 
+        new Date(r.created_at).toLocaleString(), 
+        `"${(r.contacts?.name || '').replace(/"/g, '""')}"`,
+        `"${(r.phone_number || '').replace(/"/g, '""')}"`,
+        r.duration_seconds || 0,
+        r.status,
+        r.file_url || ''
+      ]);
+      
+      const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `CallVault_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Report downloaded!');
+    } catch (err) {
+      alert('Failed to generate report: ' + err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   /* ── Vibrant Donut Chart ── */
   const DonutChart = () => {
     const total = stats.total || 1;
@@ -138,16 +203,16 @@ export default function Settings() {
             ))}
           </div>
           {/* Bars */}
-          <div className="flex items-end justify-around gap-4 h-44 pt-2 relative z-10">
+          <div className="flex items-end justify-around gap-2 sm:gap-4 h-44 pt-2 relative z-10 w-full overflow-hidden">
             {bars.map((bar, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 flex-1">
+              <div key={i} className="flex flex-col items-center gap-2 flex-1 h-full justify-end">
                 <span className="text-xs font-extrabold text-gray-900">{bar.value}</span>
                 <div className={`w-full max-w-[48px] rounded-xl bg-gradient-to-t ${bar.gradient} shadow-lg relative overflow-hidden`}
-                  style={{ height: `${Math.max((bar.value / maxVal) * 100, 10)}%` }}>
+                  style={{ height: `${Math.max((bar.value / maxVal) * 100, 5)}%` }}>
                   {/* Glossy shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-transparent rounded-xl" />
                 </div>
-                <span className="text-[10px] text-gray-500 font-bold text-center leading-tight">{bar.label}</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500 font-bold text-center leading-tight">{bar.label}</span>
               </div>
             ))}
           </div>
@@ -195,11 +260,7 @@ export default function Settings() {
                       <input type="text" value={profile.fullName} onChange={e => setProfile({ ...profile, fullName: e.target.value })}
                         placeholder="Your name" className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
                     </div>
-                    <div>
-                      <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Email Address</label>
-                      <input type="email" value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })}
-                        placeholder="you@example.com" className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
-                    </div>
+
                     <div>
                       <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Phone Number</label>
                       <input type="tel" value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })}
@@ -212,9 +273,9 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="flex justify-end mt-6">
-                    <button onClick={() => showToast('Profile saved!')}
-                      className="bg-gray-900 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-gray-800 transition-all">
-                      Save Changes
+                    <button onClick={handleSaveProfile} disabled={isSaving}
+                      className="bg-gray-900 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50">
+                      {isSaving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </div>
@@ -226,11 +287,6 @@ export default function Settings() {
               <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">Inventory by Status</h3>
               <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                 <DonutChart />
-                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-5">
-                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Analyzed</span>
-                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Transcribed</span>
-                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pending</span>
-                </div>
               </div>
             </div>
           </div>
@@ -262,9 +318,9 @@ export default function Settings() {
                     <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                       className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
-                  <button onClick={() => showToast('Report generated!')}
-                    className="h-[46px] px-6 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform">
-                    Generate Report
+                  <button onClick={handleGenerateReport} disabled={isGenerating}
+                    className="h-[46px] px-6 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform disabled:opacity-50">
+                    {isGenerating ? 'Generating...' : 'Generate Report'}
                   </button>
                 </div>
               </div>
