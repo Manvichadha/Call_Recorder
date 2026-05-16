@@ -157,7 +157,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EEF2F9] font-sans p-3 lg:p-5">
+    <div className="min-h-screen bg-[#EEF2F9] font-sans p-0 lg:p-5">
       <Sidebar />
 
       {toast && (
@@ -166,8 +166,8 @@ export default function Settings() {
         </div>
       )}
 
-      <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
+      <div className="bg-white rounded-none lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-screen lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pb-4 lg:pb-8" style={{ paddingTop: 'max(2rem, calc(env(safe-area-inset-top) + 1rem))' }}>
           <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Settings</h1>
           <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">Manage your account preferences and security</p>
         </header>

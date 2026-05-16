@@ -156,14 +156,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EEF2F9] font-sans p-3 lg:p-5">
+    <div className="min-h-screen bg-[#EEF2F9] font-sans p-0 lg:p-5">
       <Sidebar />
       <audio ref={audioRef} className="hidden" />
 
-      <div className="bg-white rounded-[40px] shadow-sm lg:ml-[108px] min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
+      <div className="bg-white rounded-none lg:rounded-[40px] shadow-sm lg:ml-[108px] min-h-screen lg:min-h-[calc(100vh-40px)] overflow-hidden pb-24 lg:pb-8 relative">
 
         {/* ── Top Bar ── */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pt-8 lg:pt-16 pb-4 lg:pb-8">
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-50 px-4 lg:px-10 pb-4 lg:pb-8" style={{ paddingTop: 'max(2rem, calc(env(safe-area-inset-top) + 1rem))' }}>
           <div className="flex items-center justify-between">
             <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
 
