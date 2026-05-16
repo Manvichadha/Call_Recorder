@@ -123,7 +123,7 @@ export default function Landing() {
 
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="hidden md:inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 rounded-full px-3 md:px-4 py-1.5 mb-5 md:mb-8 shadow-sm">
+          <div className="invisible md:visible inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 rounded-full px-3 md:px-4 py-1.5 mb-5 md:mb-8 shadow-sm">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span className="text-xs font-medium text-gray-600">AI-Powered Recording Platform</span>
           </div>
