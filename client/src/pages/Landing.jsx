@@ -123,7 +123,7 @@ export default function Landing() {
 
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 rounded-full px-3 md:px-4 py-1.5 mb-5 md:mb-8 shadow-sm">
+          <div className="hidden md:inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 rounded-full px-3 md:px-4 py-1.5 mb-5 md:mb-8 shadow-sm">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span className="text-xs font-medium text-gray-600">AI-Powered Recording Platform</span>
           </div>
@@ -221,8 +221,8 @@ export default function Landing() {
             <div
               key={i}
               className={`group relative bg-white rounded-2xl p-4 md:p-7 border transition-all duration-500 cursor-pointer ${activeFeature === i
-                  ? 'border-indigo-200 shadow-lg shadow-indigo-100/50 scale-[1.02]'
-                  : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
+                ? 'border-indigo-200 shadow-lg shadow-indigo-100/50 scale-[1.02]'
+                : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
                 }`}
               onMouseEnter={() => setActiveFeature(i)}
             >
