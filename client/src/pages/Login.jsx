@@ -80,7 +80,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#F6F8FC]">
 
       {/* ── Left Panel — Dark Branding ── */}
-      <div className="relative lg:w-[48%] bg-gradient-to-br from-[#0F0F1A] via-[#1a1a2e] to-[#0F0F1A] text-white p-6 lg:p-16 flex flex-col justify-between overflow-hidden min-h-[180px] lg:min-h-screen">
+      <div className="relative lg:w-[48%] bg-gradient-to-br from-[#0F0F1A] via-[#1a1a2e] to-[#0F0F1A] text-white p-6 lg:p-16 flex flex-col justify-between overflow-hidden min-h-[180px] lg:min-h-screen" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         {/* Decorative gradient blobs */}
         <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute -bottom-32 -right-32 w-[350px] h-[350px] bg-violet-600/15 rounded-full blur-[120px] pointer-events-none"></div>
