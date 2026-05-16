@@ -9,7 +9,7 @@ import axios from 'axios';
 export default function Simulator() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  
+
   const [phoneNumber, setPhoneNumber] = useState('');
   const [callState, setCallState] = useState('idle'); // 'idle', 'dialing', 'connected'
   const [callDuration, setCallDuration] = useState(0);
@@ -17,7 +17,7 @@ export default function Simulator() {
   const [isUploading, setIsUploading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
-  
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
@@ -41,7 +41,7 @@ export default function Simulator() {
     setCallDuration(0);
     setIsMuted(false);
     setShowKeypad(false);
-    
+
     timerRef.current = setInterval(() => {
       setCallDuration(prev => prev + 1);
     }, 1000);
@@ -80,7 +80,7 @@ export default function Simulator() {
         try {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           const file = new File([audioBlob], `${phoneNumber || 'simulated_call'}.webm`, { type: 'audio/webm' });
-          
+
           // Upload to Supabase
           const fileName = `${user.id}/${Date.now()}_${file.name}`;
           const { error: uploadError } = await supabase.storage.from('recordings').upload(fileName, file);
@@ -141,7 +141,7 @@ export default function Simulator() {
 
   const endCall = async () => {
     clearInterval(timerRef.current);
-    
+
     if (isRecording) {
       setIsRecording(false);
       setIsUploading(true);
@@ -175,18 +175,18 @@ export default function Simulator() {
     <div className="flex min-h-screen bg-[#F6F8FC] font-sans">
       <Sidebar />
       <main className="flex-1 lg:pl-[120px] pb-24 lg:pb-0 p-4 lg:p-8 flex items-center justify-center">
-        
+
         {/* Phone UI Container */}
-        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: 'min(780px, calc(100vh - 120px))', borderRadius: '48px', border: '8px solid #111827' }}>
-          
+        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: '780px', borderRadius: '48px', border: '8px solid #111827' }}>
+
           {/* Screen Content */}
-          <div className="flex-1 flex flex-col bg-slate-50 pt-10 lg:pt-16 pb-4 lg:pb-8 px-4 lg:px-6 relative">
-            
+          <div className="flex-1 flex flex-col bg-slate-50 pt-16 pb-8 px-6 relative">
+
             {/* ── Idle State (Dialer) ── */}
             {callState === 'idle' && (
               <div className="flex-1 flex flex-col">
                 <h2 className="text-center text-sm font-semibold text-gray-400 mb-8 uppercase tracking-widest">Simulator</h2>
-                
+
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 44px', width: '100%', height: '80px', alignItems: 'center', marginBottom: '24px' }}>
                     <div></div> {/* Spacer */}
@@ -210,8 +210,8 @@ export default function Simulator() {
                       { num: '7', letters: 'PQRS' }, { num: '8', letters: 'TUV' }, { num: '9', letters: 'WXYZ' },
                       { num: '*', letters: '' }, { num: '0', letters: '+' }, { num: '#', letters: '' }
                     ].map(btn => (
-                      <button 
-                        key={btn.num} 
+                      <button
+                        key={btn.num}
                         onClick={() => handleDial(btn.num)}
                         className="rounded-full border border-gray-300 bg-transparent flex flex-col items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0"
                         style={{ width: '76px', height: '76px' }}
@@ -224,12 +224,12 @@ export default function Simulator() {
                 </div>
 
                 <div className="flex justify-center mt-auto pt-6">
-                  <button 
+                  <button
                     onClick={startCall}
                     disabled={!phoneNumber}
                     className="rounded-full flex items-center justify-center transition-all shrink-0"
-                    style={{ 
-                      width: '76px', 
+                    style={{
+                      width: '76px',
                       height: '76px',
                       backgroundColor: phoneNumber ? '#4CD964' : '#A3ECAE',
                       opacity: phoneNumber ? 1 : 0.5,
@@ -248,7 +248,7 @@ export default function Simulator() {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-100 to-violet-200 flex items-center justify-center mb-6 shadow-inner">
                   <User className="w-12 h-12 text-indigo-400" />
                 </div>
-                
+
                 <h1 className="text-3xl font-light text-gray-900 mb-2">{phoneNumber}</h1>
                 <p className="text-gray-500 text-sm font-medium mb-12">
                   {callState === 'dialing' ? 'Calling...' : formatTime(callDuration)}
@@ -266,8 +266,8 @@ export default function Simulator() {
                             { num: '7', letters: 'PQRS' }, { num: '8', letters: 'TUV' }, { num: '9', letters: 'WXYZ' },
                             { num: '*', letters: '' }, { num: '0', letters: '+' }, { num: '#', letters: '' }
                           ].map(btn => (
-                            <button 
-                              key={btn.num} 
+                            <button
+                              key={btn.num}
                               onClick={() => setPhoneNumber(prev => prev + btn.num)}
                               className="rounded-full border border-gray-300 bg-transparent flex flex-col items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0"
                               style={{ width: '64px', height: '64px' }}
@@ -277,7 +277,7 @@ export default function Simulator() {
                             </button>
                           ))}
                         </div>
-                        <button 
+                        <button
                           onClick={() => setShowKeypad(false)}
                           className="mt-6 text-[10px] font-bold text-gray-500 hover:text-gray-700 transition-colors tracking-widest bg-white shadow-sm border border-gray-200 py-2 px-6 rounded-full"
                         >
@@ -287,7 +287,7 @@ export default function Simulator() {
                     ) : (
                       <div className="grid grid-cols-3 gap-6 w-full mx-auto mb-auto mt-auto" style={{ maxWidth: '280px' }}>
                         {/* Record Button */}
-                        <button 
+                        <button
                           onClick={toggleRecording}
                           className={`flex flex-col items-center justify-center gap-2 group ${isRecording ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
                         >
@@ -298,9 +298,9 @@ export default function Simulator() {
                             {isRecording ? 'STOP' : 'RECORD'}
                           </span>
                         </button>
-                        
+
                         {/* Mute */}
-                        <button 
+                        <button
                           onClick={() => setIsMuted(!isMuted)}
                           className={`flex flex-col items-center justify-center gap-2 group ${isMuted ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
                         >
@@ -311,9 +311,9 @@ export default function Simulator() {
                             {isMuted ? 'MUTED' : 'MUTE'}
                           </span>
                         </button>
-                        
+
                         {/* Keypad */}
-                        <button 
+                        <button
                           onClick={() => setShowKeypad(true)}
                           className={`flex flex-col items-center justify-center gap-2 group opacity-80 hover:opacity-100`}
                         >
@@ -328,7 +328,7 @@ export default function Simulator() {
                 )}
 
                 <div className="flex justify-center mt-auto w-full pt-8 pb-4">
-                  <button 
+                  <button
                     onClick={endCall}
                     className="w-20 h-20 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
                   >
@@ -346,7 +346,7 @@ export default function Simulator() {
                 <p className="text-xs text-gray-500 text-center max-w-[200px]">Processing audio and starting AI analysis</p>
               </div>
             )}
-            
+
           </div>
         </div>
 
