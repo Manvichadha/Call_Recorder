@@ -174,10 +174,10 @@ export default function Simulator() {
   return (
     <div className="flex min-h-screen bg-[#F6F8FC] font-sans">
       <Sidebar />
-      <main className="flex-1 lg:pl-[120px] pb-24 lg:pb-0 p-4 lg:p-8 flex items-center justify-center">
+      <main className="flex-1 lg:pl-[120px] pt-8 pb-32 px-4 lg:p-8 flex items-center justify-center">
 
         {/* Phone UI Container */}
-        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: '780px', borderRadius: '48px', border: '8px solid #111827' }}>
+        <div className="w-full bg-white shadow-2xl overflow-hidden relative flex flex-col mx-auto" style={{ maxWidth: '400px', height: '780px', minHeight: '780px', borderRadius: '48px', border: '8px solid #111827' }}>
 
           {/* Screen Content */}
           <div className="flex-1 flex flex-col bg-slate-50 pt-16 pb-8 px-6 relative">
@@ -259,7 +259,7 @@ export default function Simulator() {
                     {showKeypad ? (
                       <div className="flex-1 w-full flex flex-col items-center justify-center mb-auto mt-auto">
                         {/* Active Call Numpad */}
-                        <div className="flex flex-wrap justify-center w-full mx-auto" style={{ maxWidth: '290px', rowGap: '12px', columnGap: '20px' }}>
+                        <div className="flex flex-wrap justify-center w-full mx-auto" style={{ maxWidth: '280px', rowGap: '10px', columnGap: '20px' }}>
                           {[
                             { num: '1', letters: '' }, { num: '2', letters: 'ABC' }, { num: '3', letters: 'DEF' },
                             { num: '4', letters: 'GHI' }, { num: '5', letters: 'JKL' }, { num: '6', letters: 'MNO' },
@@ -270,16 +270,16 @@ export default function Simulator() {
                               key={btn.num}
                               onClick={() => setPhoneNumber(prev => prev + btn.num)}
                               className="rounded-full border border-gray-300 bg-transparent flex flex-col items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors shrink-0"
-                              style={{ width: '64px', height: '64px' }}
+                              style={{ width: '56px', height: '56px' }}
                             >
-                              <span className={`font-light text-gray-700 ${!btn.letters ? 'mb-0' : '-mb-1'}`} style={{ fontSize: '28px' }}>{btn.num}</span>
+                              <span className={`font-light text-gray-700 ${!btn.letters ? 'mb-0' : '-mb-1'}`} style={{ fontSize: '24px' }}>{btn.num}</span>
                               {btn.letters && <span className="font-medium text-gray-400 tracking-widest" style={{ fontSize: '8px' }}>{btn.letters}</span>}
                             </button>
                           ))}
                         </div>
                         <button
                           onClick={() => setShowKeypad(false)}
-                          className="mt-6 text-[10px] font-bold text-gray-500 hover:text-gray-700 transition-colors tracking-widest bg-white shadow-sm border border-gray-200 py-2 px-6 rounded-full"
+                          className="mt-4 text-[10px] font-bold text-gray-500 hover:text-gray-700 transition-colors tracking-widest bg-white shadow-sm border border-gray-200 py-2 px-6 rounded-full"
                         >
                           HIDE
                         </button>
@@ -327,7 +327,7 @@ export default function Simulator() {
                   </>
                 )}
 
-                <div className="flex justify-center mt-auto w-full pt-8 pb-4">
+                <div className="flex justify-center mt-auto w-full pt-4 pb-4">
                   <button
                     onClick={endCall}
                     className="w-20 h-20 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
