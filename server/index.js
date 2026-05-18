@@ -128,8 +128,8 @@ app.post('/api/voice', (req, res) => {
   if (to) {
     const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:5001';
     const callbackUrl = baseUrl.endsWith('/') 
-      ? `${baseUrl}api/webhook/recording?userId=${userId}` 
-      : `${baseUrl}/api/webhook/recording?userId=${userId}`;
+      ? `${baseUrl}api/webhook/recording?userId=${userId}&toPhone=${encodeURIComponent(to)}` 
+      : `${baseUrl}/api/webhook/recording?userId=${userId}&toPhone=${encodeURIComponent(to)}`;
 
     const dial = twiml.dial({
       callerId: process.env.TWILIO_PHONE_NUMBER,
@@ -151,11 +151,12 @@ app.post('/api/voice', (req, res) => {
 app.post('/api/webhook/recording', async (req, res) => {
   const { RecordingUrl, RecordingDuration, CallSid, To } = req.body;
   const userId = req.query.userId;
+  const toPhone = req.query.toPhone;
   
-  console.log(`[TWILIO RECORDING WEBHOOK] CallSid: ${CallSid}, Url: ${RecordingUrl}, Duration: ${RecordingDuration}, To: ${To}, userId: ${userId}`);
+  console.log(`[TWILIO RECORDING WEBHOOK] CallSid: ${CallSid}, Url: ${RecordingUrl}, Duration: ${RecordingDuration}, To: ${To}, userId: ${userId}, toPhone: ${toPhone}`);
   
   try {
-    const phoneNumber = To || 'Real VoIP Call';
+    const phoneNumber = toPhone || To || 'Real VoIP Call';
     // Direct link to direct audio file format (.mp3)
     const audioUrl = RecordingUrl + '.mp3';
 
