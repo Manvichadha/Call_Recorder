@@ -71,7 +71,10 @@ export default function Contacts() {
         }));
         
       if (insertData.length > 0) {
-        await supabase.from('contacts').insert(insertData);
+        const { error } = await supabase.from('contacts').insert(insertData);
+        if (error) {
+          throw new Error('Database error: ' + error.message);
+        }
         setToast(`Imported ${insertData.length} contacts!`);
         setTimeout(() => setToast(''), 3000);
         fetchContacts();
@@ -81,7 +84,10 @@ export default function Contacts() {
       }
     } catch (err) {
       console.error(err);
-      setToast('Failed to import contacts');
+      if (err.name === 'NotAllowedError' || err.message.includes('cancel')) {
+        return; // User simply closed the picker
+      }
+      setToast('Error: ' + err.message);
       setTimeout(() => setToast(''), 3000);
     } finally {
       setSaving(false);
