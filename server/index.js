@@ -120,15 +120,16 @@ app.get('/api/token', (req, res) => {
 // Endpoint to generate TwiML instructions when a call is dialed
 app.post('/api/voice', (req, res) => {
   const to = req.body.To || req.query.To;
+  const userId = req.body.userId || req.query.userId || '';
   const twiml = new VoiceResponse();
 
-  console.log(`[TWILIO VOICE] Incoming call request to dial: ${to}`);
+  console.log(`[TWILIO VOICE] Incoming call request to dial: ${to} from userId: ${userId}`);
 
   if (to) {
     const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:5001';
     const callbackUrl = baseUrl.endsWith('/') 
-      ? `${baseUrl}api/webhook/recording` 
-      : `${baseUrl}/api/webhook/recording`;
+      ? `${baseUrl}api/webhook/recording?userId=${userId}` 
+      : `${baseUrl}/api/webhook/recording?userId=${userId}`;
 
     const dial = twiml.dial({
       callerId: process.env.TWILIO_PHONE_NUMBER,
@@ -149,7 +150,9 @@ app.post('/api/voice', (req, res) => {
 // Webhook fired by Twilio when the telecom-side recording completes
 app.post('/api/webhook/recording', async (req, res) => {
   const { RecordingUrl, RecordingDuration, CallSid, To } = req.body;
-  console.log(`[TWILIO RECORDING WEBHOOK] CallSid: ${CallSid}, Url: ${RecordingUrl}, Duration: ${RecordingDuration}, To: ${To}`);
+  const userId = req.query.userId;
+  
+  console.log(`[TWILIO RECORDING WEBHOOK] CallSid: ${CallSid}, Url: ${RecordingUrl}, Duration: ${RecordingDuration}, To: ${To}, userId: ${userId}`);
   
   try {
     const phoneNumber = To || 'Real VoIP Call';
@@ -160,6 +163,7 @@ app.post('/api/webhook/recording', async (req, res) => {
     const { data: dbData, error } = await supabase
       .from('recordings')
       .insert({
+        user_id: userId || null,
         phone_number: phoneNumber,
         file_url: audioUrl,
         duration_seconds: parseInt(RecordingDuration) || 0,

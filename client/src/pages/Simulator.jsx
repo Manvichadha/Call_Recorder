@@ -100,7 +100,12 @@ export default function Simulator() {
       }
       setCallState('dialing');
       try {
-        const call = await device.connect({ params: { To: phoneNumber } });
+        const call = await device.connect({ 
+          params: { 
+            To: phoneNumber,
+            userId: user.id
+          } 
+        });
         setActiveConnection(call);
         
         call.on('accept', () => {
