@@ -18,6 +18,30 @@ export default function Contacts() {
 
   useEffect(() => {
     fetchContacts();
+    
+    // Listen for native Android contact picker results
+    window.onAndroidContactPicked = async (name, phone) => {
+      if (!name || !phone) return;
+      setSaving(true);
+      const { error } = await supabase.from('contacts').insert({
+        user_id: user.id,
+        name: name,
+        phone_number: phone.replace(/[^\d+]/g, '')
+      });
+      setSaving(false);
+      if (!error) {
+        setToast(`Imported ${name}!`);
+        setTimeout(() => setToast(''), 3000);
+        fetchContacts();
+      } else {
+        setToast('Error importing native contact');
+        setTimeout(() => setToast(''), 3000);
+      }
+    };
+
+    return () => {
+      delete window.onAndroidContactPicked;
+    };
   }, [user]);
 
   async function fetchContacts() {
@@ -49,6 +73,13 @@ export default function Contacts() {
   };
 
   const handleImportContacts = async () => {
+    // 1. Intercept for Custom Android App Wrapper
+    if (window.AndroidBridge && window.AndroidBridge.pickContact) {
+      window.AndroidBridge.pickContact();
+      return;
+    }
+
+    // 2. Standard Web Fallback
     if (!('contacts' in navigator && 'ContactsManager' in window)) {
       setToast('Contact import is not supported on this browser/device.');
       setTimeout(() => setToast(''), 3000);
