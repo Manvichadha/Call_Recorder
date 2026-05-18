@@ -5,12 +5,14 @@ import { Phone, PhoneOff, Mic, MicOff, User, Delete, Loader2, LayoutGrid } from 
 import { useAuthStore } from '../store/useAuthStore';
 import { supabase } from '../lib/supabase';
 import axios from 'axios';
+import { Device } from '@twilio/voice-sdk';
 
 export default function Simulator() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [callingMode, setCallingMode] = useState('simulator'); // 'simulator' or 'voip'
   const [callState, setCallState] = useState('idle'); // 'idle', 'dialing', 'connected'
   const [callDuration, setCallDuration] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -18,14 +20,55 @@ export default function Simulator() {
   const [isMuted, setIsMuted] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
 
+  // Twilio specific states
+  const [device, setDevice] = useState(null);
+  const [activeConnection, setActiveConnection] = useState(null);
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
 
-  // Cleanup timer on unmount
+  // Cleanup timer & Twilio device on unmount
   useEffect(() => {
-    return () => clearInterval(timerRef.current);
-  }, []);
+    return () => {
+      clearInterval(timerRef.current);
+      if (device) {
+        device.destroy();
+      }
+    };
+  }, [device]);
+
+  // Auto-initialize Twilio Device when VOIP calling mode is selected
+  useEffect(() => {
+    if (callingMode === 'voip' && !device) {
+      const initTwilio = async () => {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+          const identity = user?.email || 'anonymous';
+          const { data } = await axios.get(`${API_URL}/api/token?identity=${identity}`);
+          
+          const twilioDevice = new Device(data.token, {
+            codecPreferences: ['opus', 'pcmu'],
+            fakeLocalDTMF: true,
+            enableIceRestart: true,
+          });
+
+          twilioDevice.on('registered', () => console.log('Twilio Device registered'));
+          twilioDevice.on('error', (error) => {
+            console.error('Twilio Device error:', error);
+          });
+
+          await twilioDevice.register();
+          setDevice(twilioDevice);
+        } catch (err) {
+          console.error('Failed to initialize Twilio device:', err);
+          alert('Could not initialize VoIP service. Check backend connection/credentials.');
+          setCallingMode('simulator');
+        }
+      };
+      initTwilio();
+    }
+  }, [callingMode, device, user]);
 
   const handleDial = (digit) => {
     if (phoneNumber.length < 15) setPhoneNumber(prev => prev + digit);
@@ -35,16 +78,61 @@ export default function Simulator() {
     setPhoneNumber(prev => prev.slice(0, -1));
   };
 
-  const startCall = () => {
+  const handleCallCleanup = () => {
+    clearInterval(timerRef.current);
+    setCallState('idle');
+    setPhoneNumber('');
+    setIsMuted(false);
+    setShowKeypad(false);
+    setActiveConnection(null);
+  };
+
+  const startCall = async () => {
     if (!phoneNumber) return;
-    setCallState('connected');
     setCallDuration(0);
     setIsMuted(false);
     setShowKeypad(false);
 
-    timerRef.current = setInterval(() => {
-      setCallDuration(prev => prev + 1);
-    }, 1000);
+    if (callingMode === 'voip') {
+      if (!device) {
+        alert('VoIP service is not ready yet. Please wait a moment.');
+        return;
+      }
+      setCallState('dialing');
+      try {
+        const call = await device.connect({ params: { To: phoneNumber } });
+        setActiveConnection(call);
+        
+        call.on('accept', () => {
+          setCallState('connected');
+          timerRef.current = setInterval(() => {
+            setCallDuration(prev => prev + 1);
+          }, 1000);
+        });
+
+        call.on('disconnect', () => {
+          handleCallCleanup();
+        });
+
+        call.on('error', (err) => {
+          console.error('Call connection error:', err);
+          alert('Call failed: ' + err.message);
+          handleCallCleanup();
+        });
+
+      } catch (err) {
+        console.error('Failed to place VoIP call:', err);
+        alert('Call failed: ' + err.message);
+        setCallState('idle');
+      }
+    } else {
+      // Simulator Mode (Simulated call + browser microphone recording)
+      setCallState('connected');
+      timerRef.current = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+      startRecording();
+    }
   };
 
   const startRecording = async () => {
@@ -142,26 +230,40 @@ export default function Simulator() {
   const endCall = async () => {
     clearInterval(timerRef.current);
 
-    if (isRecording) {
-      setIsRecording(false);
-      setIsUploading(true);
-      try {
-        await stopRecordingAndUpload();
-        setCallState('idle');
-        setPhoneNumber('');
-        navigate('/recordings');
-      } catch (error) {
-        alert('Failed to save recording: ' + error.message);
-        setCallState('idle');
-      } finally {
-        setIsUploading(false);
+    if (callingMode === 'voip') {
+      if (activeConnection) {
+        activeConnection.disconnect();
       }
-    } else {
-      setCallState('idle');
-      setIsMuted(false);
-      setShowKeypad(false);
-      setPhoneNumber('');
+      handleCallCleanup();
       navigate('/recordings');
+    } else {
+      if (isRecording) {
+        setIsRecording(false);
+        setIsUploading(true);
+        try {
+          await stopRecordingAndUpload();
+          handleCallCleanup();
+          navigate('/recordings');
+        } catch (error) {
+          alert('Failed to save recording: ' + error.message);
+          handleCallCleanup();
+        } finally {
+          setIsUploading(false);
+        }
+      } else {
+        handleCallCleanup();
+        navigate('/recordings');
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (activeConnection) {
+      const newMuted = !isMuted;
+      activeConnection.mute(newMuted);
+      setIsMuted(newMuted);
+    } else {
+      setIsMuted(!isMuted);
     }
   };
 
@@ -185,7 +287,25 @@ export default function Simulator() {
             {/* ── Idle State (Dialer) ── */}
             {callState === 'idle' && (
               <div className="flex-1 flex flex-col">
-                <h2 className="text-center text-sm font-semibold text-gray-400 mb-8 uppercase tracking-widest">Simulator</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-sm font-bold text-gray-800 uppercase tracking-widest">DIALER</h2>
+                  
+                  {/* Calling Mode Toggle */}
+                  <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                    <button 
+                      onClick={() => setCallingMode('simulator')}
+                      className={`text-[9px] font-extrabold px-3 py-1.5 rounded-md transition-all ${callingMode === 'simulator' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                    >
+                      SIMULATOR
+                    </button>
+                    <button 
+                      onClick={() => setCallingMode('voip')}
+                      className={`text-[9px] font-extrabold px-3 py-1.5 rounded-md transition-all ${callingMode === 'voip' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                    >
+                      REAL CALL (VOIP)
+                    </button>
+                  </div>
+                </div>
 
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 44px', width: '100%', height: '80px', alignItems: 'center', marginBottom: '24px' }}>
@@ -286,22 +406,34 @@ export default function Simulator() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 gap-6 w-full mx-auto mb-auto mt-auto" style={{ maxWidth: '280px' }}>
-                        {/* Record Button */}
-                        <button
-                          onClick={toggleRecording}
-                          className={`flex flex-col items-center justify-center gap-2 group ${isRecording ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
-                        >
-                          <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording ? 'bg-red-500 shadow-lg shadow-red-200 animate-pulse' : 'bg-white shadow-sm border border-gray-200 group-hover:bg-gray-50'}`}>
-                            {isRecording ? <Mic className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-gray-600" />}
+                        
+                        {/* Auto-Record glowing state for VoIP or Record toggle for Simulator */}
+                        {callingMode === 'voip' ? (
+                          <div className="flex flex-col items-center justify-center gap-2 opacity-100">
+                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-red-500 shadow-lg shadow-red-200 animate-pulse">
+                              <Mic className="w-6 h-6 text-white" />
+                            </div>
+                            <span className="text-[10px] font-semibold tracking-wider text-red-500 animate-pulse">
+                              AUTO REC
+                            </span>
                           </div>
-                          <span className={`text-[10px] font-semibold tracking-wider ${isRecording ? 'text-red-500' : 'text-gray-500'}`}>
-                            {isRecording ? 'STOP' : 'RECORD'}
-                          </span>
-                        </button>
+                        ) : (
+                          <button
+                            onClick={toggleRecording}
+                            className={`flex flex-col items-center justify-center gap-2 group ${isRecording ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
+                          >
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording ? 'bg-red-500 shadow-lg shadow-red-200 animate-pulse' : 'bg-white shadow-sm border border-gray-200 group-hover:bg-gray-50'}`}>
+                              {isRecording ? <Mic className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-gray-600" />}
+                            </div>
+                            <span className={`text-[10px] font-semibold tracking-wider ${isRecording ? 'text-red-500' : 'text-gray-500'}`}>
+                              {isRecording ? 'STOP' : 'RECORD'}
+                            </span>
+                          </button>
+                        )}
 
                         {/* Mute */}
                         <button
-                          onClick={() => setIsMuted(!isMuted)}
+                          onClick={toggleMute}
                           className={`flex flex-col items-center justify-center gap-2 group ${isMuted ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
                         >
                           <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isMuted ? 'bg-indigo-50 shadow-inner border border-indigo-200' : 'bg-white shadow-sm border border-gray-200 group-hover:bg-gray-50'}`}>

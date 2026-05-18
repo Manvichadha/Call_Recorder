@@ -4,11 +4,14 @@ const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const { AssemblyAI } = require('assemblyai');
 
+const twilio = require('twilio');
+
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 const supabase = createClient(
   process.env.SUPABASE_URL, 
@@ -16,12 +19,60 @@ const supabase = createClient(
 );
 const aai = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
 
+const AccessToken = twilio.jwt.AccessToken;
+const VoiceGrant = AccessToken.VoiceGrant;
+const VoiceResponse = twilio.twiml.VoiceResponse;
+
+// Reusable AssemblyAI Transcription trigger
+async function submitTranscription(recordingId, audioUrl) {
+  const WEBHOOK_URL = process.env.WEBHOOK_URL || 'YOUR_NGROK_URL/api/webhook/assemblyai';
+
+  console.log(`[TRANSCRIBE] Reusable trigger starting for recording ${recordingId}`);
+  console.log(`[TRANSCRIBE] Audio URL: ${audioUrl}`);
+  console.log(`[TRANSCRIBE] Webhook URL: ${WEBHOOK_URL}`);
+
+  // Submit audio to AssemblyAI with ALL features enabled
+  const transcript = await aai.transcripts.submit({
+    audio_url: audioUrl,
+    webhook_url: WEBHOOK_URL,
+    webhook_auth_header_name: 'x-callvault-webhook-auth',
+    webhook_auth_header_value: process.env.WEBHOOK_SECRET || 'secret',
+    speech_models: ['universal-2'],
+    speaker_labels: true,
+    summarization: true,
+    summary_model: 'informative',
+    summary_type: 'bullets',
+    sentiment_analysis: true,
+    auto_highlights: true,
+    entity_detection: true,
+  });
+
+  console.log(`[TRANSCRIBE] Submitted! AssemblyAI ID: ${transcript.id}`);
+
+  // Update the recording in Supabase with the AssemblyAI ID
+  const { error } = await supabase
+    .from('recordings')
+    .update({ 
+      assembly_id: transcript.id,
+      status: 'pending'
+    })
+    .eq('id', recordingId);
+
+  if (error) {
+    console.error('[TRANSCRIBE] Supabase update error:', error);
+    throw error;
+  }
+
+  console.log(`[TRANSCRIBE] DB updated for ${recordingId}`);
+  return transcript.id;
+}
+
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'CallVault Backend', webhook: process.env.WEBHOOK_URL });
 });
 
-// Endpoint to trigger AssemblyAI transcription
+// Endpoint to trigger AssemblyAI transcription manually
 app.post('/api/transcribe', async (req, res) => {
   try {
     const { recordingId, audioUrl } = req.body;
@@ -30,50 +81,100 @@ app.post('/api/transcribe', async (req, res) => {
       return res.status(400).json({ error: 'recordingId and audioUrl are required' });
     }
 
-    const WEBHOOK_URL = process.env.WEBHOOK_URL || 'YOUR_NGROK_URL/api/webhook/assemblyai';
+    const transcriptId = await submitTranscription(recordingId, audioUrl);
+    res.json({ message: 'Transcription started', transcriptId });
+  } catch (error) {
+    console.error('[TRANSCRIBE ENDPOINT ERROR]:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
-    console.log(`[TRANSCRIBE] Starting for recording ${recordingId}`);
-    console.log(`[TRANSCRIBE] Audio URL: ${audioUrl}`);
-    console.log(`[TRANSCRIBE] Webhook URL: ${WEBHOOK_URL}`);
-
-    // Submit audio to AssemblyAI with ALL features enabled
-    const transcript = await aai.transcripts.submit({
-      audio_url: audioUrl,
-      webhook_url: WEBHOOK_URL,
-      webhook_auth_header_name: 'x-callvault-webhook-auth',
-      webhook_auth_header_value: process.env.WEBHOOK_SECRET || 'secret',
-      speech_models: ['universal-2'],
-      speaker_labels: true,
-      summarization: true,
-      summary_model: 'informative',
-      summary_type: 'bullets',
-      sentiment_analysis: true,
-      auto_highlights: true,
-      entity_detection: true,
+// Endpoint to generate Twilio Voice Access Tokens
+app.get('/api/token', (req, res) => {
+  try {
+    const identity = req.query.identity || 'anonymous';
+    
+    const accessToken = new AccessToken(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_API_KEY,
+      process.env.TWILIO_API_SECRET,
+      { identity: identity }
+    );
+    
+    const grant = new VoiceGrant({
+      outgoingApplicationSid: process.env.TWILIO_TWIML_APP_SID,
+      incomingAllow: true
     });
+    accessToken.addGrant(grant);
+    
+    res.json({ token: accessToken.toJwt(), identity });
+  } catch (err) {
+    console.error('[TOKEN GENERATION ERROR]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-    console.log(`[TRANSCRIBE] Submitted! AssemblyAI ID: ${transcript.id}`);
+// Endpoint to generate TwiML instructions when a call is dialed
+app.post('/api/voice', (req, res) => {
+  const to = req.body.To || req.query.To;
+  const twiml = new VoiceResponse();
 
-    // Update the recording in Supabase with the AssemblyAI ID
-    const { error } = await supabase
+  console.log(`[TWILIO VOICE] Incoming call request to dial: ${to}`);
+
+  if (to) {
+    const dial = twiml.dial({
+      callerId: process.env.TWILIO_PHONE_NUMBER,
+      record: 'record-from-answer',
+      recordingStatusCallback: `${process.env.WEBHOOK_URL}/api/webhook/recording`,
+      recordingStatusCallbackMethod: 'POST'
+    });
+    
+    dial.number(to);
+  } else {
+    twiml.say("No destination number provided.");
+  }
+
+  res.type('text/xml');
+  res.send(twiml.toString());
+});
+
+// Webhook fired by Twilio when the telecom-side recording completes
+app.post('/api/webhook/recording', async (req, res) => {
+  const { RecordingUrl, RecordingDuration, CallSid, To } = req.body;
+  console.log(`[TWILIO RECORDING WEBHOOK] CallSid: ${CallSid}, Url: ${RecordingUrl}, Duration: ${RecordingDuration}, To: ${To}`);
+  
+  try {
+    const phoneNumber = To || 'Real VoIP Call';
+    // Direct link to direct audio file format (.mp3)
+    const audioUrl = RecordingUrl + '.mp3';
+
+    // Insert record in Supabase recordings
+    const { data: dbData, error } = await supabase
       .from('recordings')
-      .update({ 
-        assembly_id: transcript.id,
-        status: 'pending'
+      .insert({
+        phone_number: phoneNumber,
+        file_url: audioUrl,
+        duration_seconds: parseInt(RecordingDuration) || 0,
+        status: 'pending',
       })
-      .eq('id', recordingId);
-
+      .select()
+      .single();
+      
     if (error) {
-      console.error('[TRANSCRIBE] Supabase update error:', error);
+      console.error('[TWILIO WEBHOOK] Supabase insert error:', error);
       throw error;
     }
 
-    console.log(`[TRANSCRIBE] DB updated for ${recordingId}`);
-    res.json({ message: 'Transcription started', transcriptId: transcript.id });
-  } catch (error) {
-    console.error('[TRANSCRIBE] Error:', error.message);
-    res.status(500).json({ error: error.message });
+    console.log(`[TWILIO WEBHOOK] Created Supabase record: ${dbData.id}. Triggering transcription...`);
+
+    // Trigger AssemblyAI
+    await submitTranscription(dbData.id, audioUrl);
+    
+  } catch (err) {
+    console.error('[TWILIO WEBHOOK ERROR]', err.message);
   }
+  
+  res.sendStatus(200);
 });
 
 // AssemblyAI Webhook handler
