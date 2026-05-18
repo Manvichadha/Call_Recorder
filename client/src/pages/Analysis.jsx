@@ -247,7 +247,7 @@ export default function Analysis() {
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div className="min-w-0">
-                <h1 className="text-xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight truncate">
+                <h1 className="text-xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight leading-normal py-1 lg:py-2 truncate">
                   {getRecName(recording)}
                 </h1>
                 <p className="text-[10px] lg:text-xs text-gray-400 mt-0.5 lg:mt-3">
