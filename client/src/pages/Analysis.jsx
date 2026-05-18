@@ -106,13 +106,14 @@ export default function Analysis() {
   const seekTo = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
-    if (audioRef.current && duration) {
-      audioRef.current.currentTime = percent * duration;
+    const finalDuration = recording?.duration_seconds || duration;
+    if (audioRef.current && finalDuration && isFinite(finalDuration)) {
+      audioRef.current.currentTime = percent * finalDuration;
     }
   };
 
   const formatTime = (s) => {
-    if (!s || isNaN(s)) return '0:00';
+    if (!s || isNaN(s) || !isFinite(s)) return '0:00';
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m}:${String(sec).padStart(2, '0')}`;
@@ -287,7 +288,7 @@ export default function Analysis() {
                   </button>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-bold text-gray-900 truncate">{getRecName(recording)}</h3>
-                    <p className="text-sm text-gray-400">{formatTime(currentTime)} / {formatTime(duration || recording.duration_seconds)}</p>
+                    <p className="text-sm text-gray-400">{formatTime(currentTime)} / {formatTime(recording.duration_seconds || duration)}</p>
                   </div>
                   <div className="flex gap-1.5">
                     {recording.file_url && (
@@ -303,12 +304,12 @@ export default function Analysis() {
                 <div className="cursor-pointer" onClick={seekTo}>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-200" 
-                      style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
+                      style={{ width: `${(recording.duration_seconds || duration) ? (currentTime / (recording.duration_seconds || duration)) * 100 : 0}%` }}></div>
                   </div>
                 </div>
                 <div className="flex justify-between mt-2">
                   <span className="text-xs text-gray-400 tabular-nums">{formatTime(currentTime)}</span>
-                  <span className="text-xs text-gray-400 tabular-nums">{formatTime(duration || recording.duration_seconds)}</span>
+                  <span className="text-xs text-gray-400 tabular-nums">{formatTime(recording.duration_seconds || duration)}</span>
                 </div>
               </div>
 
