@@ -25,7 +25,10 @@ const VoiceResponse = twilio.twiml.VoiceResponse;
 
 // Reusable AssemblyAI Transcription trigger
 async function submitTranscription(recordingId, audioUrl) {
-  const WEBHOOK_URL = process.env.WEBHOOK_URL || 'YOUR_NGROK_URL/api/webhook/assemblyai';
+  const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:5001';
+  const WEBHOOK_URL = baseUrl.endsWith('/') 
+    ? `${baseUrl}api/webhook/assemblyai` 
+    : `${baseUrl}/api/webhook/assemblyai`;
 
   console.log(`[TRANSCRIBE] Reusable trigger starting for recording ${recordingId}`);
   console.log(`[TRANSCRIBE] Audio URL: ${audioUrl}`);
@@ -122,10 +125,15 @@ app.post('/api/voice', (req, res) => {
   console.log(`[TWILIO VOICE] Incoming call request to dial: ${to}`);
 
   if (to) {
+    const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:5001';
+    const callbackUrl = baseUrl.endsWith('/') 
+      ? `${baseUrl}api/webhook/recording` 
+      : `${baseUrl}/api/webhook/recording`;
+
     const dial = twiml.dial({
       callerId: process.env.TWILIO_PHONE_NUMBER,
       record: 'record-from-answer',
-      recordingStatusCallback: `${process.env.WEBHOOK_URL}/api/webhook/recording`,
+      recordingStatusCallback: callbackUrl,
       recordingStatusCallbackMethod: 'POST'
     });
     
