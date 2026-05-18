@@ -92,7 +92,7 @@ export default function Recordings() {
   }, [playingId]);
 
   const formatTime = (s) => {
-    if (!s || isNaN(s)) return '0:00';
+    if (!s || isNaN(s) || !isFinite(s)) return '0:00';
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m}:${String(sec).padStart(2, '0')}`;
@@ -393,9 +393,9 @@ export default function Recordings() {
                         {isPlaying && (
                           <div className="flex items-center gap-3 mt-2">
                             <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
+                              <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${(rec.duration_seconds || duration) ? (currentTime / (rec.duration_seconds || duration)) * 100 : 0}%` }}></div>
                             </div>
-                            <span className="text-xs text-gray-400 tabular-nums">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                            <span className="text-xs text-gray-400 tabular-nums">{formatTime(currentTime)} / {formatTime(rec.duration_seconds || duration)}</span>
                           </div>
                         )}
                       </div>
