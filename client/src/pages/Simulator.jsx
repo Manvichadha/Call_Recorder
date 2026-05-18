@@ -310,9 +310,21 @@ export default function Simulator() {
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 44px', width: '100%', height: '80px', alignItems: 'center', marginBottom: '24px' }}>
                     <div></div> {/* Spacer */}
-                    <div className="hide-scrollbar" style={{ fontSize: '40px', fontWeight: 300, color: '#374151', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflowX: 'auto', textAlign: 'center', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                      {phoneNumber}
-                    </div>
+                    <input
+                      type="text"
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Allow only phone-friendly inputs: numbers, +, *, #, spaces, hyphens
+                        const sanitized = val.replace(/[^0-9+*#\s-]/g, '');
+                        if (sanitized.length <= 17) {
+                          setPhoneNumber(sanitized);
+                        }
+                      }}
+                      placeholder="Enter number"
+                      className="w-full text-center bg-transparent border-none outline-none font-light text-gray-700 placeholder-gray-300"
+                      style={{ fontSize: '30px', letterSpacing: '0.05em' }}
+                    />
                     <div>
                       {phoneNumber && (
                         <button onClick={handleBackspace} style={{ color: '#9CA3AF', padding: '8px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
