@@ -48,6 +48,46 @@ export default function Contacts() {
     }
   };
 
+  const handleImportContacts = async () => {
+    if (!('contacts' in navigator && 'ContactsManager' in window)) {
+      setToast('Contact import is not supported on this browser/device.');
+      setTimeout(() => setToast(''), 3000);
+      return;
+    }
+    try {
+      const props = ['name', 'tel'];
+      const opts = { multiple: true };
+      const selectedContacts = await navigator.contacts.select(props, opts);
+      
+      if (!selectedContacts || selectedContacts.length === 0) return;
+      
+      setSaving(true);
+      const insertData = selectedContacts
+        .filter(c => c.name && c.name.length > 0 && c.tel && c.tel.length > 0)
+        .map(c => ({
+          user_id: user.id,
+          name: c.name[0],
+          phone_number: c.tel[0].replace(/[^\d+]/g, '')
+        }));
+        
+      if (insertData.length > 0) {
+        await supabase.from('contacts').insert(insertData);
+        setToast(`Imported ${insertData.length} contacts!`);
+        setTimeout(() => setToast(''), 3000);
+        fetchContacts();
+      } else {
+        setToast('No valid contacts found with phone numbers.');
+        setTimeout(() => setToast(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setToast('Failed to import contacts');
+      setTimeout(() => setToast(''), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     const { error } = await supabase.from('contacts').delete().eq('id', id);
     if (!error) {
@@ -81,14 +121,25 @@ export default function Contacts() {
               <h1 className="text-2xl lg:text-[56px] font-extrabold text-gray-900 tracking-tight">Contacts</h1>
               <p className="text-xs lg:text-sm text-gray-400 mt-1 lg:mt-6">{contacts.length} saved contacts</p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="h-9 lg:h-11 px-3 lg:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center gap-1.5 lg:gap-2 text-white text-xs lg:text-sm font-semibold shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Contact</span>
-              <span className="sm:hidden">Add</span>
-            </button>
+            <div className="flex items-center gap-2 lg:gap-3">
+              <button
+                onClick={handleImportContacts}
+                disabled={saving}
+                className="h-9 lg:h-11 px-3 lg:px-5 bg-white border border-gray-200 rounded-xl flex items-center gap-1.5 lg:gap-2 text-gray-700 text-xs lg:text-sm font-semibold hover:bg-gray-50 active:scale-95 transition-transform"
+              >
+                <Phone className="w-4 h-4" />
+                <span className="hidden sm:inline">Import Contacts</span>
+                <span className="sm:hidden">Import</span>
+              </button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="h-9 lg:h-11 px-3 lg:px-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl flex items-center gap-1.5 lg:gap-2 text-white text-xs lg:text-sm font-semibold shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-transform"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">Add Contact</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -167,7 +218,11 @@ export default function Contacts() {
               </div>
             ) : (
               filteredContacts.map((contact) => (
-                <div key={contact.id} className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between hover:shadow-md hover:border-gray-200 transition-all shadow-sm">
+                <div 
+                  key={contact.id} 
+                  onClick={() => navigate('/simulator', { state: { autoDial: contact.phone_number } })}
+                  className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between hover:shadow-md hover:border-indigo-500 cursor-pointer transition-all shadow-sm group"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center overflow-hidden border border-gray-200">
                       {contact.avatar_url ? (

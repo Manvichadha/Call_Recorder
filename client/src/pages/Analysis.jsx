@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios'; // <-- ADDED: axios import for API requests
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/useAuthStore';
 import Sidebar from '../components/Sidebar';
@@ -8,7 +7,7 @@ import {
   Play, Pause, ArrowLeft, Download, Trash2,
   FileText, Brain, BarChart3, Info, Clock, 
   HardDrive, Calendar, ChevronRight, Sparkles, 
-  CheckCircle2, AlertTriangle, Mic, RefreshCw // <-- ADDED: RefreshCw icon
+  CheckCircle2, AlertTriangle, Mic
 } from 'lucide-react';
 
 /* ── Status column config ── */
@@ -68,25 +67,6 @@ export default function Analysis() {
   };
 
   useEffect(() => { fetchRec(); }, [id]);
-
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSync = async () => {
-    if (!id || isSyncing) return;
-    setIsSyncing(true);
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      const { data } = await axios.post(`${API_URL}/api/transcribe/sync`, {
-        recordingId: id
-      });
-      fetchRec(); // Reload the recording
-    } catch (err) {
-      console.error('Failed to sync recording:', err);
-      alert('Sync failed: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   /* ── Supabase Realtime: auto-update when recording changes ── */
   useEffect(() => {
@@ -276,18 +256,6 @@ export default function Analysis() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {recording.status !== 'analyzed' && (
-                <button
-                  onClick={handleSync}
-                  disabled={isSyncing}
-                  className={`flex items-center gap-1.5 text-[10px] lg:text-xs font-bold px-2.5 lg:px-3 py-1 lg:py-1.5 rounded-xl border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all ${
-                    isSyncing ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  {isSyncing ? 'Syncing...' : 'Sync Status'}
-                </button>
-              )}
               <span className={`text-[10px] lg:text-xs font-bold px-2 lg:px-3 py-1 lg:py-1.5 rounded-lg ${
                 recording.status === 'analyzed' ? 'bg-indigo-50 text-indigo-600' : 
                 recording.status === 'transcribed' ? 'bg-emerald-50 text-emerald-600' :

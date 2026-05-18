@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { Phone, PhoneOff, Mic, MicOff, User, Delete, Loader2, LayoutGrid } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
@@ -9,10 +9,11 @@ import { Device } from '@twilio/voice-sdk';
 
 export default function Simulator() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
 
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [callingMode, setCallingMode] = useState('simulator'); // 'simulator' or 'voip'
+  const [phoneNumber, setPhoneNumber] = useState(location.state?.autoDial || '');
+  const [callingMode, setCallingMode] = useState(location.state?.autoDial ? 'voip' : 'simulator'); // 'simulator' or 'voip'
   const [callState, setCallState] = useState('idle'); // 'idle', 'dialing', 'connected'
   const [callDuration, setCallDuration] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -139,6 +140,21 @@ export default function Simulator() {
       startRecording();
     }
   };
+
+  const [hasAutoDialed, setHasAutoDialed] = useState(false);
+  useEffect(() => {
+    if (location.state?.autoDial && !hasAutoDialed && phoneNumber) {
+      if (callingMode === 'voip') {
+        if (device) {
+          setHasAutoDialed(true);
+          startCall();
+        }
+      } else {
+        setHasAutoDialed(true);
+        startCall();
+      }
+    }
+  }, [location.state, hasAutoDialed, phoneNumber, callingMode, device]);
 
   const startRecording = async () => {
     try {
